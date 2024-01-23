@@ -3,21 +3,34 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Button, Flex, Stack } from '@mantine/core';
+import { createId } from '@paralleldrive/cuid2';
 import { capitalCase } from 'change-case';
+import dayjs from 'dayjs';
 
 import { Task, TaskAction } from './page.types';
 
-import { useRetrieveTasksLazyQuery } from '../../../types';
-import { CbLoadingOverlay, CbModal, TaskForm } from '@/components';
+import { useCreateTaskMutation, useRetrieveTasksLazyQuery } from '../../../types';
+import { CbLoader, CbLoadingOverlay, CbModal, ErrorAlert, TaskForm } from '@/components';
 
 const Page = () => {
   const headerRef = useRef<HTMLDivElement>(null);
 
   const [action, setAction] = useState<TaskAction>('create');
+  const [errorMessage, setErrorMessage] = useState<string>();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState<boolean>(false);
   const [tasks, setTasks] = useState<Task[]>();
 
-  const [executeRetrieveTasksLazyQuery, { loading: isRetrieveTasksLoading }] = useRetrieveTasksLazyQuery({
+  const [executeCreateTaskMutation, { loading: isCreateTaskLoading }] = useCreateTaskMutation({
+    onCompleted: () => {
+      refetchTasks();
+      setIsTaskModalOpen(false);
+    },
+    onError: (error) => {
+      setErrorMessage(error.message);
+    },
+  });
+
+  const [executeRetrieveTasksLazyQuery, { loading: isRetrieveTasksLoading, refetch: refetchTasks }] = useRetrieveTasksLazyQuery({
     fetchPolicy: 'cache-and-network',
     onCompleted: ({ tasks: returnedTasks }) => {
       setTasks(returnedTasks);
@@ -56,22 +69,39 @@ const Page = () => {
         onClose={handleCreateTaskModalClose}
       >
         <Stack h={450} w="100%">
-          <Stack h="100%" justify="flex-start">
-            <TaskForm
-              defaultValues={{
-                description: undefined,
-                name: undefined,
-                dueAtUtc: undefined,
-              }}
-              onSubmit={({ description, dueAtUtc, name }) => {
-                console.log({
-                  description,
-                  dueAtUtc,
-                  name,
-                });
-              }}
-            />
-          </Stack>
+          {isCreateTaskLoading ? (
+            <Stack align="center" h="100%" justify="center">
+              <CbLoader message="Saving task, please wait..." />
+            </Stack>
+          ) : (
+            <Stack h="100%" justify="flex-start">
+              <TaskForm
+                defaultValues={{
+                  description: undefined,
+                  name: undefined,
+                  dueAtUtc: undefined,
+                }}
+                onSubmit={({ description, dueAtUtc, name }) => {
+                  executeCreateTaskMutation({
+                    variables: {
+                      data: {
+                        description,
+                        dueAtUtc: dayjs(dueAtUtc).toISOString(),
+                        id: createId(),
+                        name,
+                      },
+                    },
+                  });
+                }}
+              />
+
+              {errorMessage && (
+                <ErrorAlert mt="lg" w="100%">
+                  {errorMessage}
+                </ErrorAlert>
+              )}
+            </Stack>
+          )}
         </Stack>
       </CbModal>
 

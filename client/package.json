@@ -16,6 +16,7 @@
     "@mantine/dates": "^7.4.2",
     "@mantine/hooks": "^7.4.2",
     "@mantine/notifications": "^7.4.2",
+    "@paralleldrive/cuid2": "^2.2.2",
     "@tabler/icons-react": "^2.46.0",
     "change-case": "^5.4.2",
     "dayjs": "^1.11.10",
