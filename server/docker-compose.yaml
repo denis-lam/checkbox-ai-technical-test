@@ -1,0 +1,9 @@
+version: "3.3"
+services:
+  db:
+    environment:
+       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    image: postgres
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    restart: always
