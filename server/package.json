@@ -1,11 +1,15 @@
 {
   "name": "checkbox-ai-server",
-  "module": "index.ts",
-  "type": "module",
-  "devDependencies": {
-    "bun-types": "latest"
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@prisma/client": "^5.8.1"
   },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "bun-types": "latest",
+    "prisma": "^5.8.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
   }
 }
