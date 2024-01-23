@@ -2,24 +2,32 @@
   "name": "checkbox-ai-server",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "scripts": {
     "db:push": "prisma db push",
     "db:setup": "bun run db:push",
-    "start": "bun run db:setup && ts-node index.ts"
+    "db:seed": "prisma db seed",
+    "start:dev": "bun run db:setup && bun run db:seed && ts-node index.ts"
   },
   "dependencies": {
     "@apollo/server": "^4.10.0",
     "@prisma/client": "^5.8.1",
     "graphql": "^16.8.1",
     "reflect-metadata": "^0.2.1",
-    "type-graphql": "next",
-    "typegraphql-prisma": "^0.27.1"
+    "type-graphql": "next"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.3.1",
+    "@paralleldrive/cuid2": "^2.2.2",
     "@types/node": "^20.11.5",
     "bun-types": "latest",
+    "dayjs": "^1.11.10",
     "prisma": "^5.8.1",
     "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
+    "typegraphql-prisma": "^0.27.1",
     "typescript": "^5.3.3"
   }
 }
