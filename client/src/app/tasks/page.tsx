@@ -13,8 +13,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { TASK_STATUS_TO_MANTINE_COLOR_MAP } from './page.constants';
 import { Task, TaskAction, TaskStatus } from './page.types';
 
-import { useCreateTaskMutation, useRetrieveTasksLazyQuery } from '../../../types';
-import { CbLoader, CbLoadingOverlay, CbModal, CbPagination, CbTable, ErrorAlert, TaskForm } from '@/components';
+import { QueryMode, useCreateTaskMutation, useRetrieveTasksLazyQuery } from '../../../types';
+import { CbLoader, CbLoadingOverlay, CbModal, CbPagination, CbTable, ErrorAlert, TableFilterForm, TaskForm } from '@/components';
 import { useTablePagination } from '@/hooks';
 
 const Page = () => {
@@ -40,6 +40,7 @@ const Page = () => {
   const [currentPageNumber, setCurrentPageNumber] = useState<number>(calculatePageNumber(searchParams.get('pageNumber')));
   const [currentPageSize, setCurrentPageSize] = useState<number>(getInitialPageSize(searchParams.get('pageSize')));
   const [errorMessage, setErrorMessage] = useState<string>();
+  const [filterString, setFilterString] = useState<string | null>(searchParams.get('filterString'));
   const [hasRetrievedData, setHasRetrievedData] = useState<boolean>(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState<boolean>(false);
   const [sortingState, setSortingState] = useState<SortingState>([
@@ -173,6 +174,16 @@ const Page = () => {
     setIsTaskModalOpen(false);
   };
 
+  const handleFilterInputChange = (value: string) => {
+    setCurrentPageNumber(1);
+    setFilterString(value);
+  };
+
+  const handleFilterInputClear = () => {
+    setCurrentPageNumber(1);
+    setFilterString(null);
+  };
+
   const handlePageNumberChange = (number: number) => {
     setCurrentPageNumber(number);
   };
@@ -207,8 +218,18 @@ const Page = () => {
   const { desc: isDescendingSort, id: sortField } = firstSortingState ?? {};
 
   useEffect(() => {
+    const trimmedFilterString = filterString?.trim();
+
     executeRetrieveTasksLazyQuery({
       variables: {
+        where: trimmedFilterString
+          ? {
+              name: {
+                contains: trimmedFilterString,
+                mode: QueryMode.insensitive,
+              },
+            }
+          : undefined,
         orderBy: sortField
           ? {
               [sortField]: isDescendingSort ? 'desc' : 'asc',
@@ -219,7 +240,7 @@ const Page = () => {
       },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPageNumber, currentPageSize, isDescendingSort, sortField]);
+  }, [currentPageNumber, currentPageSize, filterString, isDescendingSort, sortField]);
 
   const footerHeight = footerRef.current?.clientHeight ?? 0;
   const headerTopPosition = (headerRef.current?.clientHeight ?? 0) + 1;
@@ -287,6 +308,15 @@ const Page = () => {
           width: '100%',
         })}
       >
+        <TableFilterForm
+          placeholderText="Search by name"
+          values={{
+            filterString,
+          }}
+          onInputChange={handleFilterInputChange}
+          onInputClear={handleFilterInputClear}
+        />
+
         <Button type="button" onClick={handleCreateTaskButtonClick}>
           Create task
         </Button>

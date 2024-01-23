@@ -5,6 +5,7 @@ export * from './CbPagination';
 export * from './CbTable';
 export * from './ErrorAlert';
 export * from './ErrorMessage';
+export * from './TableFilterForm';
 export * from './TablePageSizeForm';
 export * from './TaskForm';
 export * from './TextInputRightSection';
