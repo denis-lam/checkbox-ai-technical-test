@@ -13,6 +13,11 @@ const createTaskMutation: DocumentNode = gql`
 
 const retrieveTasksQuery: DocumentNode = gql`
   query retrieveTasks($orderBy: [TaskOrderByWithRelationInput!], $skip: Int, $take: Int, $where: TaskWhereInput) {
+    aggregateTask(where: $where) {
+      count: _count {
+        total: _all
+      }
+    }
     tasks(orderBy: $orderBy, skip: $skip, take: $take, where: $where) {
       createdAtUtc
       description

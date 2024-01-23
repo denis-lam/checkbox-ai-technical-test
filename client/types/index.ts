@@ -483,7 +483,7 @@ export type RetrieveTasksQueryVariables = Exact<{
 }>;
 
 
-export type RetrieveTasksQuery = { __typename?: 'Query', tasks: Array<{ __typename?: 'Task', createdAtUtc: any, description: string, dueAtUtc: any, id: string, name: string }> };
+export type RetrieveTasksQuery = { __typename?: 'Query', aggregateTask: { __typename?: 'AggregateTask', count?: { __typename?: 'TaskCountAggregate', total: number } | null }, tasks: Array<{ __typename?: 'Task', createdAtUtc: any, description: string, dueAtUtc: any, id: string, name: string }> };
 
 
 export const CreateTaskDocument = gql`
@@ -524,6 +524,11 @@ export type CreateTaskMutationResult = Apollo.MutationResult<CreateTaskMutation>
 export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMutation, CreateTaskMutationVariables>;
 export const RetrieveTasksDocument = gql`
     query retrieveTasks($orderBy: [TaskOrderByWithRelationInput!], $skip: Int, $take: Int, $where: TaskWhereInput) {
+  aggregateTask(where: $where) {
+    count: _count {
+      total: _all
+    }
+  }
   tasks(orderBy: $orderBy, skip: $skip, take: $take, where: $where) {
     createdAtUtc
     description

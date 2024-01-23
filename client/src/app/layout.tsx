@@ -38,17 +38,6 @@ const RootLayout = ({
       gray: ['#fdfdfd', '#e8f0f2', '#dde6e9', '#c1d4da', '#97b5be', '#658598', '#537386', '#3d5c6f', '#2c4a5c', '#1a3545'],
       red: ['#fffafa', '#ffe1e1', '#ffcaca', '#ffa3a3', '#ff6f6f', '#ff4646', '#ff1f1f', '#e00f0f', '#ad1010', '#8f0a0a'],
     },
-    components: {
-      Table: Table.extend({
-        styles({ fontSizes }) {
-          return {
-            thead: {
-              fontSize: fontSizes.sm,
-            },
-          };
-        },
-      }),
-    },
   });
 
   return (
