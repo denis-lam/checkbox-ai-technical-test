@@ -13,9 +13,15 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { TASK_STATUS_TO_MANTINE_COLOR_MAP } from './page.constants';
 import { Task, TaskAction, TaskStatus } from './page.types';
 
-import { QueryMode, useCreateTaskMutation, useRetrieveTasksLazyQuery } from '../../../types';
+import {
+  QueryMode,
+  useCreateTaskMutation,
+  useRetrieveTaskLazyQuery,
+  useRetrieveTasksLazyQuery,
+  useUpdateTaskMutation,
+} from '../../../types';
 import { CbLoader, CbLoadingOverlay, CbModal, CbPagination, CbTable, ErrorAlert, TableFilterForm, TaskForm } from '@/components';
-import { useTablePagination } from '@/hooks';
+import { useNotification, useTablePagination } from '@/hooks';
 
 const Page = () => {
   const route = usePathname();
@@ -24,6 +30,7 @@ const Page = () => {
   const footerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
+  const { displayErrorNotification, displaySuccessNotification } = useNotification();
   const { push } = useRouter();
   const {
     calculatePageNumber,
@@ -43,6 +50,7 @@ const Page = () => {
   const [filterString, setFilterString] = useState<string | null>(searchParams.get('filterString'));
   const [hasRetrievedData, setHasRetrievedData] = useState<boolean>(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState<boolean>(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>();
   const [sortingState, setSortingState] = useState<SortingState>([
     {
       desc: false,
@@ -55,11 +63,37 @@ const Page = () => {
 
   const [executeCreateTaskMutation, { loading: isCreateTaskLoading }] = useCreateTaskMutation({
     onCompleted: () => {
+      displaySuccessNotification({
+        message: 'Your task has been created',
+      });
+
       refetchTasks();
       setIsTaskModalOpen(false);
     },
     onError: (error) => {
       setErrorMessage(error.message);
+    },
+  });
+
+  const [executeRetrieveTaskLazyQuery, { loading: isRetrieveTaskLoading }] = useRetrieveTaskLazyQuery({
+    onCompleted: ({ getTask: returnedTask }) => {
+      if (!returnedTask) {
+        setErrorMessage('Task not found');
+        return;
+      }
+
+      setIsTaskModalOpen(true);
+      setSelectedTask({
+        ...returnedTask,
+        status: determineTaskStatus(returnedTask.dueAtUtc),
+      });
+    },
+    onError: ({ message }) => {
+      console.error(message);
+
+      displayErrorNotification({
+        message: 'Oops! Unable to retrieve task, please try again later.',
+      });
     },
   });
 
@@ -88,12 +122,35 @@ const Page = () => {
         ? calculatePageNumber(currentPageNumber, calculatedTotalPages)
         : undefined;
 
-      const querystringParams = compact([pageNumber ? `pageNumber=${pageNumber}` : undefined, `pageSize=${currentPageSize}`]);
+      const querystringParams = compact([
+        filterString ? `filterString=${encodeURIComponent(filterString)}` : undefined,
+        pageNumber ? `pageNumber=${pageNumber}` : undefined,
+        `pageSize=${currentPageSize}`,
+      ]);
 
       push(`${route}?${querystringParams.join('&')}`);
     },
     onError: ({ message }) => {
       console.error(message);
+
+      displayErrorNotification({
+        message: 'Oops! Unable to retrieve tasks, please try again later.',
+      });
+    },
+  });
+
+  const [executeUpdateTaskMutation, { loading: isUpdateTaskLoading }] = useUpdateTaskMutation({
+    onCompleted: () => {
+      displaySuccessNotification({
+        message: 'Your task has been updated',
+      });
+
+      refetchTasks();
+      setIsTaskModalOpen(false);
+      setSelectedTask(null);
+    },
+    onError: (error) => {
+      setErrorMessage(error.message);
     },
   });
 
@@ -170,10 +227,6 @@ const Page = () => {
     setIsTaskModalOpen(true);
   };
 
-  const handleCreateTaskModalClose = () => {
-    setIsTaskModalOpen(false);
-  };
-
   const handleFilterInputChange = (value: string) => {
     setCurrentPageNumber(1);
     setFilterString(value);
@@ -197,9 +250,21 @@ const Page = () => {
     setSortingState(sortingState);
   };
 
+  const handleTaskModalClose = () => {
+    setIsTaskModalOpen(false);
+    setSelectedTask(null);
+  };
+
   const handleTaskRowClick = (id: Task['id']) => {
-    console.log({ id });
     setAction('update');
+
+    executeRetrieveTaskLazyQuery({
+      variables: {
+        where: {
+          id,
+        },
+      },
+    });
   };
 
   const { getHeaderGroups, getRowModel } = useReactTable<Task>({
@@ -245,20 +310,24 @@ const Page = () => {
   const footerHeight = footerRef.current?.clientHeight ?? 0;
   const headerTopPosition = (headerRef.current?.clientHeight ?? 0) + 1;
 
+  const isSaving = isCreateTaskLoading || isUpdateTaskLoading;
+
   return (
     <>
+      {isRetrieveTaskLoading && <CbLoadingOverlay message="Retrieving task, please wait..." />}
+
       {isRetrieveTasksLoading && <CbLoadingOverlay message="Retrieving tasks, please wait..." />}
 
       <CbModal
+        closeOnClickOutside={!isSaving}
         opened={isTaskModalOpen}
         size={650}
         title={`${capitalCase(action)} task`}
-        closeOnClickOutside
-        withCloseButton
-        onClose={handleCreateTaskModalClose}
+        withCloseButton={!isSaving}
+        onClose={handleTaskModalClose}
       >
         <Stack h={450} w="100%">
-          {isCreateTaskLoading ? (
+          {isSaving ? (
             <Stack align="center" h="100%" justify="center">
               <CbLoader message="Saving task, please wait..." />
             </Stack>
@@ -266,18 +335,51 @@ const Page = () => {
             <Stack h="100%" justify="flex-start">
               <TaskForm
                 defaultValues={{
-                  description: undefined,
-                  name: undefined,
-                  dueAtUtc: undefined,
+                  description: selectedTask?.description,
+                  name: selectedTask?.name,
+                  dueAtUtc: selectedTask?.dueAtUtc ? dayjs(selectedTask.dueAtUtc).toDate() : undefined,
                 }}
                 onSubmit={({ description, dueAtUtc, name }) => {
-                  executeCreateTaskMutation({
+                  if (!selectedTask) {
+                    executeCreateTaskMutation({
+                      variables: {
+                        data: {
+                          description,
+                          dueAtUtc: dayjs(dueAtUtc).toISOString(),
+                          id: createId(),
+                          name,
+                        },
+                      },
+                    });
+
+                    return;
+                  }
+
+                  executeUpdateTaskMutation({
                     variables: {
                       data: {
-                        description,
-                        dueAtUtc: dayjs(dueAtUtc).toISOString(),
-                        id: createId(),
-                        name,
+                        description:
+                          selectedTask.description !== description
+                            ? {
+                                set: description,
+                              }
+                            : undefined,
+                        dueAtUtc:
+                          dayjs(selectedTask.dueAtUtc).startOf('day').toDate().toDateString() !==
+                          dayjs(dueAtUtc).startOf('day').toDate().toDateString()
+                            ? {
+                                set: dayjs(dueAtUtc).toISOString(),
+                              }
+                            : undefined,
+                        name:
+                          selectedTask.name !== name
+                            ? {
+                                set: name,
+                              }
+                            : undefined,
+                      },
+                      where: {
+                        id: selectedTask.id,
                       },
                     },
                   });

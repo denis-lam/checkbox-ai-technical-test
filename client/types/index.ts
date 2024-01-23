@@ -11,10 +11,15 @@ export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' |
 const defaultOptions = {} as const;
 export const namedOperations = {
   Query: {
+    retrieveTask: 'retrieveTask',
     retrieveTasks: 'retrieveTasks'
   },
   Mutation: {
-    createTask: 'createTask'
+    createTask: 'createTask',
+    updateTask: 'updateTask'
+  },
+  Fragment: {
+    taskFragment: 'taskFragment'
   }
 }
 /** All built-in and custom scalars, mapped to their actual values */
@@ -468,12 +473,21 @@ export type TaskWhereUniqueInput = {
   name?: InputMaybe<StringFilter>;
 };
 
+export type TaskFragmentFragment = { __typename?: 'Task', createdAtUtc: any, description: string, dueAtUtc: any, id: string, name: string };
+
 export type CreateTaskMutationVariables = Exact<{
   data: TaskCreateInput;
 }>;
 
 
-export type CreateTaskMutation = { __typename?: 'Mutation', createOneTask: { __typename?: 'Task', description: string, dueAtUtc: any, id: string, name: string } };
+export type CreateTaskMutation = { __typename?: 'Mutation', createOneTask: { __typename?: 'Task', createdAtUtc: any, description: string, dueAtUtc: any, id: string, name: string } };
+
+export type RetrieveTaskQueryVariables = Exact<{
+  where: TaskWhereUniqueInput;
+}>;
+
+
+export type RetrieveTaskQuery = { __typename?: 'Query', getTask?: { __typename?: 'Task', createdAtUtc: any, description: string, dueAtUtc: any, id: string, name: string } | null };
 
 export type RetrieveTasksQueryVariables = Exact<{
   orderBy?: InputMaybe<Array<TaskOrderByWithRelationInput> | TaskOrderByWithRelationInput>;
@@ -485,17 +499,30 @@ export type RetrieveTasksQueryVariables = Exact<{
 
 export type RetrieveTasksQuery = { __typename?: 'Query', aggregateTask: { __typename?: 'AggregateTask', count?: { __typename?: 'TaskCountAggregate', total: number } | null }, tasks: Array<{ __typename?: 'Task', createdAtUtc: any, description: string, dueAtUtc: any, id: string, name: string }> };
 
+export type UpdateTaskMutationVariables = Exact<{
+  data: TaskUpdateInput;
+  where: TaskWhereUniqueInput;
+}>;
 
+
+export type UpdateTaskMutation = { __typename?: 'Mutation', updateOneTask?: { __typename?: 'Task', createdAtUtc: any, description: string, dueAtUtc: any, id: string, name: string } | null };
+
+export const TaskFragmentFragmentDoc = gql`
+    fragment taskFragment on Task {
+  createdAtUtc
+  description
+  dueAtUtc
+  id
+  name
+}
+    `;
 export const CreateTaskDocument = gql`
     mutation createTask($data: TaskCreateInput!) {
   createOneTask(data: $data) {
-    description
-    dueAtUtc
-    id
-    name
+    ...taskFragment
   }
 }
-    `;
+    ${TaskFragmentFragmentDoc}`;
 export type CreateTaskMutationFn = Apollo.MutationFunction<CreateTaskMutation, CreateTaskMutationVariables>;
 
 /**
@@ -522,6 +549,46 @@ export function useCreateTaskMutation(baseOptions?: Apollo.MutationHookOptions<C
 export type CreateTaskMutationHookResult = ReturnType<typeof useCreateTaskMutation>;
 export type CreateTaskMutationResult = Apollo.MutationResult<CreateTaskMutation>;
 export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMutation, CreateTaskMutationVariables>;
+export const RetrieveTaskDocument = gql`
+    query retrieveTask($where: TaskWhereUniqueInput!) {
+  getTask(where: $where) {
+    ...taskFragment
+  }
+}
+    ${TaskFragmentFragmentDoc}`;
+
+/**
+ * __useRetrieveTaskQuery__
+ *
+ * To run a query within a React component, call `useRetrieveTaskQuery` and pass it any options that fit your needs.
+ * When your component renders, `useRetrieveTaskQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useRetrieveTaskQuery({
+ *   variables: {
+ *      where: // value for 'where'
+ *   },
+ * });
+ */
+export function useRetrieveTaskQuery(baseOptions: Apollo.QueryHookOptions<RetrieveTaskQuery, RetrieveTaskQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<RetrieveTaskQuery, RetrieveTaskQueryVariables>(RetrieveTaskDocument, options);
+      }
+export function useRetrieveTaskLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RetrieveTaskQuery, RetrieveTaskQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<RetrieveTaskQuery, RetrieveTaskQueryVariables>(RetrieveTaskDocument, options);
+        }
+export function useRetrieveTaskSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<RetrieveTaskQuery, RetrieveTaskQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<RetrieveTaskQuery, RetrieveTaskQueryVariables>(RetrieveTaskDocument, options);
+        }
+export type RetrieveTaskQueryHookResult = ReturnType<typeof useRetrieveTaskQuery>;
+export type RetrieveTaskLazyQueryHookResult = ReturnType<typeof useRetrieveTaskLazyQuery>;
+export type RetrieveTaskSuspenseQueryHookResult = ReturnType<typeof useRetrieveTaskSuspenseQuery>;
+export type RetrieveTaskQueryResult = Apollo.QueryResult<RetrieveTaskQuery, RetrieveTaskQueryVariables>;
 export const RetrieveTasksDocument = gql`
     query retrieveTasks($orderBy: [TaskOrderByWithRelationInput!], $skip: Int, $take: Int, $where: TaskWhereInput) {
   aggregateTask(where: $where) {
@@ -530,14 +597,10 @@ export const RetrieveTasksDocument = gql`
     }
   }
   tasks(orderBy: $orderBy, skip: $skip, take: $take, where: $where) {
-    createdAtUtc
-    description
-    dueAtUtc
-    id
-    name
+    ...taskFragment
   }
 }
-    `;
+    ${TaskFragmentFragmentDoc}`;
 
 /**
  * __useRetrieveTasksQuery__
@@ -574,3 +637,37 @@ export type RetrieveTasksQueryHookResult = ReturnType<typeof useRetrieveTasksQue
 export type RetrieveTasksLazyQueryHookResult = ReturnType<typeof useRetrieveTasksLazyQuery>;
 export type RetrieveTasksSuspenseQueryHookResult = ReturnType<typeof useRetrieveTasksSuspenseQuery>;
 export type RetrieveTasksQueryResult = Apollo.QueryResult<RetrieveTasksQuery, RetrieveTasksQueryVariables>;
+export const UpdateTaskDocument = gql`
+    mutation updateTask($data: TaskUpdateInput!, $where: TaskWhereUniqueInput!) {
+  updateOneTask(data: $data, where: $where) {
+    ...taskFragment
+  }
+}
+    ${TaskFragmentFragmentDoc}`;
+export type UpdateTaskMutationFn = Apollo.MutationFunction<UpdateTaskMutation, UpdateTaskMutationVariables>;
+
+/**
+ * __useUpdateTaskMutation__
+ *
+ * To run a mutation, you first call `useUpdateTaskMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateTaskMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateTaskMutation, { data, loading, error }] = useUpdateTaskMutation({
+ *   variables: {
+ *      data: // value for 'data'
+ *      where: // value for 'where'
+ *   },
+ * });
+ */
+export function useUpdateTaskMutation(baseOptions?: Apollo.MutationHookOptions<UpdateTaskMutation, UpdateTaskMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateTaskMutation, UpdateTaskMutationVariables>(UpdateTaskDocument, options);
+      }
+export type UpdateTaskMutationHookResult = ReturnType<typeof useUpdateTaskMutation>;
+export type UpdateTaskMutationResult = Apollo.MutationResult<UpdateTaskMutation>;
+export type UpdateTaskMutationOptions = Apollo.BaseMutationOptions<UpdateTaskMutation, UpdateTaskMutationVariables>;

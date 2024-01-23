@@ -81,7 +81,7 @@ const CbTable = <T,>({
             return (
               <Table.Tr
                 key={`row-${rowId}`}
-                // className={onRowClick ? 'table-clickable-row' : undefined}
+                className={onRowClick ? 'table-clickable-row' : undefined}
                 onClick={() => {
                   if (!onRowClick) {
                     return;
