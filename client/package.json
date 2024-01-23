@@ -4,16 +4,29 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "lint": "next lint",
     "dev": "next dev",
+    "graphql-codegen": "graphql-codegen --config graphql-codegen.ts",
+    "lint": "next lint",
     "start": "next start"
   },
   "dependencies": {
+    "@apollo/client": "^3.8.10",
+    "@mantine/core": "^7.4.2",
+    "@mantine/dates": "^7.4.2",
+    "@mantine/hooks": "^7.4.2",
+    "@mantine/notifications": "^7.4.2",
+    "@tabler/icons-react": "^2.46.0",
     "react": "^18",
     "react-dom": "^18",
     "next": "14.1.0"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/client-preset": "^4.1.0",
+    "@graphql-codegen/introspection": "^4.0.0",
+    "@graphql-codegen/named-operations-object": "^3.0.0",
+    "@graphql-codegen/typescript-operations": "^4.0.1",
+    "@graphql-codegen/typescript-react-apollo": "^4.1.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
