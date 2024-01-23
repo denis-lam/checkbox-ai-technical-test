@@ -2,6 +2,10 @@
   "name": "checkbox-ai-server",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "db:push": "prisma db push",
+    "db:setup": "bun run db:push"
+  },
   "dependencies": {
     "@prisma/client": "^5.8.1"
   },
