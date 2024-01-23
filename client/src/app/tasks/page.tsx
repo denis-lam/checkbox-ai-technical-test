@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { Flex } from '@mantine/core';
+import { Button, Flex } from '@mantine/core';
 
 import { Task } from './page.types';
 
 import { useRetrieveTasksLazyQuery } from '../../../types';
 
 const Page = () => {
+  const headerRef = useRef<HTMLDivElement>(null);
+
   const [tasks, setTasks] = useState<Task[]>();
 
   const [executeRetrieveTasksLazyQuery, { loading: isRetrieveTasksLoading }] = useRetrieveTasksLazyQuery({
@@ -21,16 +23,50 @@ const Page = () => {
     },
   });
 
+  const handleCreateTaskButtonClick = () => {
+    console.log('Create task');
+  };
+
   useEffect(() => {
     executeRetrieveTasksLazyQuery();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const headerTopPosition = (headerRef.current?.clientHeight ?? 0) + 1;
+
   return (
     <>
       {isRetrieveTasksLoading && <div>Retrieving tasks, please wait...</div>}
 
-      <Flex p="lg">
+      <Flex
+        ref={headerRef}
+        direction="row"
+        gap="lg"
+        justify="flex-end"
+        p="lg"
+        style={({ colors }) => ({
+          backgroundColor: colors.gray[1],
+          borderBottom: `1px solid ${colors.gray[3]}`,
+          position: 'fixed',
+          top: 0,
+          width: '100%',
+        })}
+      >
+        <Button type="button" onClick={handleCreateTaskButtonClick}>
+          Create task
+        </Button>
+      </Flex>
+
+      <Flex
+        p="lg"
+        style={() => ({
+          height: `calc(100% - ${headerTopPosition}px)`,
+          overflowY: 'scroll',
+          position: 'fixed',
+          top: headerTopPosition,
+          width: '100%',
+        })}
+      >
         {tasks && (
           <>
             {tasks.length ? (
