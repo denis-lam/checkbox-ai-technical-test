@@ -4,10 +4,16 @@
   "private": true,
   "scripts": {
     "db:push": "prisma db push",
-    "db:setup": "bun run db:push"
+    "db:setup": "bun run db:push",
+    "start": "bun run db:setup && ts-node index.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.8.1"
+    "@apollo/server": "^4.10.0",
+    "@prisma/client": "^5.8.1",
+    "graphql": "^16.8.1",
+    "reflect-metadata": "^0.2.1",
+    "type-graphql": "next",
+    "typegraphql-prisma": "^0.27.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
