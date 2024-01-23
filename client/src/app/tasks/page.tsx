@@ -8,7 +8,7 @@ import { capitalCase } from 'change-case';
 import { Task, TaskAction } from './page.types';
 
 import { useRetrieveTasksLazyQuery } from '../../../types';
-import { CbLoadingOverlay, CbModal } from '@/components';
+import { CbLoadingOverlay, CbModal, TaskForm } from '@/components';
 
 const Page = () => {
   const headerRef = useRef<HTMLDivElement>(null);
@@ -55,7 +55,24 @@ const Page = () => {
         withCloseButton
         onClose={handleCreateTaskModalClose}
       >
-        <Stack h={450} w="100%" />
+        <Stack h={450} w="100%">
+          <Stack h="100%" justify="flex-start">
+            <TaskForm
+              defaultValues={{
+                description: undefined,
+                name: undefined,
+                dueAtUtc: undefined,
+              }}
+              onSubmit={({ description, dueAtUtc, name }) => {
+                console.log({
+                  description,
+                  dueAtUtc,
+                  name,
+                });
+              }}
+            />
+          </Stack>
+        </Stack>
       </CbModal>
 
       <Flex
