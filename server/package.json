@@ -7,9 +7,9 @@
   },
   "scripts": {
     "db:push": "prisma db push",
-    "db:setup": "bun run db:push",
     "db:seed": "prisma db seed",
-    "start:dev": "bun run db:setup && bun run db:seed && ts-node index.ts"
+    "db:setup": "bun run db:push && bun run db:seed",
+    "start:dev": "bun run db:setup && ts-node index.ts"
   },
   "dependencies": {
     "@apollo/server": "^4.10.0",
