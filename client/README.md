@@ -2,35 +2,45 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server:
+## Before running the application
+
+You will need to create an **.env** file the contains the following environment variables:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Next.js
+
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3100
+NEXT_PUBLIC_API_ENDPOINT_PATH_GRAPHQL=/graphql
+NEXT_PUBLIC_DATE_FORMAT=DD/MM/YYYY
+NEXT_PUBLIC_DEFAULT_TABLE_PAGE_SIZE=10
+NEXT_PUBLIC_MAX_TABLE_PAGE_SIZE=50
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ensure the URL and port in the `NEXT_PUBLIC_API_BASE_URL` environment variable matches what you've set for the server.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Once you have created the .env file above along with setting appropriate values for the environment variables, you can start up the web application by simply run the following command:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+bun run dev
+```
 
-## Learn More
+Open [http://localhost:3000](http://localhost:3000) in your browser and you will be redirected to the task management page at [http://localhost:3000/tasks](http://localhost:3000/tasks).
 
-To learn more about Next.js, take a look at the following resources:
+## Notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+I have completed both the **required** and **should have** user stories.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+In terms of handling the key risk of having a huge volume of tasks being created, there are considerations for both the frontend and the backend.
 
-## Deploy on Vercel
+With the frontend, the main consideration I can see is related to how many records are retrieved in one API request. This can easily be handled with pagination. Additionally, caching data can also help so that unnecessary requests to the server are minimized.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+With the backend, the main consideration will be with the cloud infrastructure where we can ensure that:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- the VMs hosting the API is configured for auto-scaling
+- the database is configured with auto-scaling
+
+At the application level, other considerations could be to configure rate-limiting so that excessive requests can be throttled to keep the API from being overloaded.
+
+### Improvements
+
+- Add unit and E2E tests
