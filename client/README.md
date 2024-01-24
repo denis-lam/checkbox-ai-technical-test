@@ -1,6 +1,30 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+# Prerequisites
+
+## Bun
+
+Install Bun (https://bun.sh/docs/installation).
+
+TL;DR
+
+If you already have **npm** installed, just run the command below:
+
+```bash
+npm install -g bun
+```
+
+Otherwise, see the URL above for other installation options.
+
+# Getting started
+
+## Installation
+
+To install all the required dependencies, simply run:
+
+```bash
+bun install
+```
 
 ## Before running the application
 
