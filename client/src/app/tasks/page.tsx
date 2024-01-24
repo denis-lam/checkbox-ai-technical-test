@@ -21,7 +21,7 @@ import {
   useUpdateTaskMutation,
 } from '../../../types';
 import { CbLoader, CbLoadingOverlay, CbModal, CbPagination, CbTable, ErrorAlert, TableFilterForm, TaskForm } from '@/components';
-import { useNotification, useTablePagination } from '@/hooks';
+import { useEnvironmentVariables, useNotification, useTablePagination } from '@/hooks';
 
 const Page = () => {
   const route = usePathname();
@@ -30,6 +30,7 @@ const Page = () => {
   const footerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
+  const { parseEnvironmentVariable } = useEnvironmentVariables();
   const { displayErrorNotification, displaySuccessNotification } = useNotification();
   const { push } = useRouter();
   const {
@@ -40,7 +41,12 @@ const Page = () => {
     generatePaginationResultsDescription,
     getInitialPageSize,
   } = useTablePagination({
-    defaultPageSize: Number(process.env.NEXT_PUBLIC_DEFAULT_TABLE_PAGE_SIZE),
+    defaultPageSize: Number(
+      parseEnvironmentVariable({
+        key: 'NEXT_PUBLIC_DEFAULT_TABLE_PAGE_SIZE',
+        value: Number(process.env.NEXT_PUBLIC_DEFAULT_TABLE_PAGE_SIZE),
+      }),
+    ),
   });
 
   const [action, setAction] = useState<TaskAction>('create');

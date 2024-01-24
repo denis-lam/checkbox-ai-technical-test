@@ -7,11 +7,11 @@ import '@mantine/notifications/styles.css';
 import { ReactNode, useRef } from 'react';
 
 import { ApolloProvider } from '@apollo/client';
-import { ColorSchemeScript, MantineProvider, Table, createTheme } from '@mantine/core';
+import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { Roboto } from 'next/font/google';
 
-import { useApolloClient } from '@/hooks';
+import { useApolloClient, useEnvironmentVariables } from '@/hooks';
 
 const font = Roboto({
   subsets: ['latin'],
@@ -24,11 +24,22 @@ const RootLayout = ({
   children: ReactNode;
 }>) => {
   const { getApolloClient } = useApolloClient();
+  const { parseEnvironmentVariable } = useEnvironmentVariables();
 
   const apolloClient = useRef(
     getApolloClient({
-      apiBaseUrl: String(process.env.NEXT_PUBLIC_API_BASE_URL),
-      gqlEndpointPath: String(process.env.NEXT_PUBLIC_API_ENDPOINT_PATH_GRAPHQL),
+      apiBaseUrl: String(
+        parseEnvironmentVariable({
+          key: 'NEXT_PUBLIC_API_BASE_URL',
+          value: process.env.NEXT_PUBLIC_API_BASE_URL,
+        }),
+      ),
+      gqlEndpointPath: String(
+        parseEnvironmentVariable({
+          key: 'NEXT_PUBLIC_API_ENDPOINT_PATH_GRAPHQL',
+          value: process.env.NEXT_PUBLIC_API_ENDPOINT_PATH_GRAPHQL,
+        }),
+      ),
     }),
   );
 

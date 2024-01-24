@@ -15,6 +15,7 @@ export interface UseTablePagination {
     totalRecords?: number;
   }) => string | undefined;
   getInitialPageSize: (value: number | string | null) => number;
+  getMaxPageSize: () => number;
 }
 
 export interface UseTablePaginationOptions {

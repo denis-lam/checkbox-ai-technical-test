@@ -12,7 +12,11 @@ import { TextInputRightSection } from '../TextInputRightSection';
 import { calculateMinDate, taskFormZodResolver } from './TaskForm.helpers';
 import { TaskFormData, TaskFormProps } from './TaskForm.types';
 
+import { useEnvironmentVariables } from '@/hooks';
+
 const TaskForm: FC<TaskFormProps<TaskFormData>> = ({ defaultValues, onSubmit, submitButtonText = 'Save' }) => {
+  const { parseEnvironmentVariable } = useEnvironmentVariables();
+
   const {
     formState: { errors, isDirty, isValid },
     handleSubmit,
@@ -66,7 +70,12 @@ const TaskForm: FC<TaskFormProps<TaskFormData>> = ({ defaultValues, onSubmit, su
             rightSection={errors.dueAtUtc ? <TextInputRightSection error={errors.dueAtUtc} value={watch('dueAtUtc')} /> : null}
             size="sm"
             value={watch('dueAtUtc') ? watch('dueAtUtc') : undefined}
-            valueFormat={process.env.NEXT_PUBLIC_DATE_FORMAT ?? 'DD/MM/YYYY'}
+            valueFormat={String(
+              parseEnvironmentVariable({
+                key: 'NEXT_PUBLIC_MAX_TABLE_PAGE_SIZE',
+                value: Number(process.env.NEXT_PUBLIC_MAX_TABLE_PAGE_SIZE),
+              }),
+            )}
             w="100%"
             withAsterisk
             onChange={(value) => {

@@ -1,10 +1,14 @@
 import isNil from 'lodash.isnil';
 import pluralize from 'pluralize';
 
+import { useEnvironmentVariables } from '../useEnvironmentVariables';
+
 import { UseTablePagination, UseTablePaginationOptions } from './useTablePagination.types';
 
 const useTablePagination = (options: UseTablePaginationOptions): UseTablePagination => {
   const { defaultPageSize } = options ?? {};
+
+  const { parseEnvironmentVariable } = useEnvironmentVariables();
 
   const calculatePageNumber: UseTablePagination['calculatePageNumber'] = (pageNumber, totalPages = 1) => {
     const castedPageNumber = Number(pageNumber);
@@ -67,7 +71,22 @@ const useTablePagination = (options: UseTablePaginationOptions): UseTablePaginat
       return defaultPageSize;
     }
 
+    const maxPageSize = getMaxPageSize();
+
+    if (castedPageSize > maxPageSize) {
+      return maxPageSize;
+    }
+
     return castedPageSize;
+  };
+
+  const getMaxPageSize: UseTablePagination['getMaxPageSize'] = () => {
+    return Number(
+      parseEnvironmentVariable({
+        key: 'NEXT_PUBLIC_MAX_TABLE_PAGE_SIZE',
+        value: Number(process.env.NEXT_PUBLIC_MAX_TABLE_PAGE_SIZE),
+      }),
+    );
   };
 
   return {
@@ -77,6 +96,7 @@ const useTablePagination = (options: UseTablePaginationOptions): UseTablePaginat
     canPaginate,
     generatePaginationResultsDescription,
     getInitialPageSize,
+    getMaxPageSize,
   };
 };
 

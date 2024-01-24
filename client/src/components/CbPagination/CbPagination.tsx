@@ -31,7 +31,7 @@ const CbPagination: FC<CbPaginationProps> = ({
         <Flex direction="row" w="100%">
           <Group>
             <TablePageSizeForm
-              values={{
+              defaultValues={{
                 pageSize,
               }}
               onInputChange={onPageSizeChange}
