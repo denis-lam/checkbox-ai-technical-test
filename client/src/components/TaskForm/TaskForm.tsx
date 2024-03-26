@@ -72,8 +72,8 @@ const TaskForm: FC<TaskFormProps<TaskFormData>> = ({ defaultValues, onSubmit, su
             value={watch('dueAtUtc') ? watch('dueAtUtc') : undefined}
             valueFormat={String(
               parseEnvironmentVariable({
-                key: 'NEXT_PUBLIC_MAX_TABLE_PAGE_SIZE',
-                value: Number(process.env.NEXT_PUBLIC_MAX_TABLE_PAGE_SIZE),
+                key: 'NEXT_PUBLIC_DATE_FORMAT',
+                value: String(process.env.NEXT_PUBLIC_DATE_FORMAT),
               }),
             )}
             w="100%"

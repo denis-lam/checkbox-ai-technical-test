@@ -20,4 +20,6 @@ model Task {
   dueAtUtc     DateTime @db.Timestamptz(3)
   id           String   @id
   name         String
+
+  @@index(fields: [name])
 }
